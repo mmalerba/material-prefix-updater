@@ -1,0 +1,27 @@
+[
+  {
+    "pr": "test",
+    "changes": [
+      {
+        "className": "MyThing",
+        "method": "constructor",
+        "invalidParamCounts": [
+          {
+            "count": 0,
+            "message": "added new param"
+          }
+        ]
+      },
+      {
+        "className": "MyThing",
+        "method": "stuff",
+        "invalidParamCounts": [
+          {
+            "count": 0,
+            "message": "added new param"
+          }
+        ]
+      }
+    ]
+  }
+]

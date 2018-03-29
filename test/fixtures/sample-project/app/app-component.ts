@@ -57,3 +57,5 @@ class MyThing {
   _deprecatedBackdropClass: string;
   onAlignChanged = new EventEmitter<void>();
 }
+
+class MySidenav extends MatSidenav {}
