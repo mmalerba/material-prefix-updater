@@ -89,7 +89,7 @@ export interface MaterialOutputNameData {
 export interface MaterialMethodCallData {
   className: string;
   method: string;
-  invalidParamCounts: {
+  invalidArgCounts: {
     count: number,
     message: string
   }[]

@@ -26,7 +26,7 @@ export class CheckInheritanceWalker extends ProgramAwareRuleWalker {
             declaration,
             `Found class "${declaration.name.text}" which extends class "${t.symbol.name}".` +
             ` Please note that the base class property "${propertyData.replace}" has changed to` +
-            ` "${propertyData.replaceWith}". You may need to update your class as well.`);
+            ` "${propertyData.replaceWith}". You may need to update your class as well`);
       }
     });
   }

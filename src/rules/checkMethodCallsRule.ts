@@ -16,23 +16,18 @@ export class Rule extends Rules.TypedRule {
 export class CheckMethodCallsWalker extends ProgramAwareRuleWalker {
   visitNewExpression(expression: ts.NewExpression) {
     const className = this.getTypeChecker().getTypeAtLocation(expression).symbol.name;
-    const currentCheck = methodCallChecks
-        .find(data => data.method === 'constructor' && data.className === className);
-    if (!currentCheck) {
-      return;
-    }
-
-    const failure = currentCheck.invalidParamCounts
-        .find(countData => countData.count === expression.arguments.length);
-    if (failure) {
-      this.addFailureAtNode(
-          expression,
-          `Found "${className}" constructed with ${failure.count} arguments. ${failure.message}`);
-    }
+    this.checkConstructor(expression, className);
   }
 
   visitCallExpression(expression: ts.CallExpression) {
     if (expression.expression.kind !== ts.SyntaxKind.PropertyAccessExpression) {
+      const methodName = expression.getFirstToken().getText();
+
+      if (methodName === 'super') {
+        const type = this.getTypeChecker().getTypeAtLocation(expression.expression);
+        const className = type.symbol && type.symbol.name;
+        this.checkConstructor(expression, className);
+      }
       return;
     }
 
@@ -41,10 +36,9 @@ export class CheckMethodCallsWalker extends ProgramAwareRuleWalker {
     const accessExp = expression.expression;
     const classNode = accessExp.getChildAt(accessExp.getChildCount() - 3);
     const methodNode = accessExp.getChildAt(accessExp.getChildCount() - 1);
-
+    const methodName = methodNode.getText();
     const type = this.getTypeChecker().getTypeAtLocation(classNode);
     const className = type.symbol && type.symbol.name;
-    const methodName = methodNode.getText();
 
     const currentCheck = methodCallChecks
         .find(data => data.method === methodName && data.className === className);
@@ -52,13 +46,29 @@ export class CheckMethodCallsWalker extends ProgramAwareRuleWalker {
       return;
     }
 
-    const failure = currentCheck.invalidParamCounts
+    const failure = currentCheck.invalidArgCounts
         .find(countData => countData.count === expression.arguments.length);
     if (failure) {
       this.addFailureAtNode(
           expression,
           `Found call to "${className}.${methodName}" with ${failure.count} arguments.` +
-          ` ${failure.message}"`);
+          ` ${failure.message}`);
+    }
+  }
+
+  private checkConstructor(node: ts.NewExpression | ts.CallExpression, className: string) {
+    const currentCheck = methodCallChecks
+        .find(data => data.method === 'constructor' && data.className === className);
+    if (!currentCheck) {
+      return;
+    }
+
+    const failure = currentCheck.invalidArgCounts
+        .find(countData => countData.count === node.arguments.length);
+    if (failure) {
+      this.addFailureAtNode(
+          node,
+          `Found "${className}" constructed with ${failure.count} arguments. ${failure.message}`);
     }
   }
 }
